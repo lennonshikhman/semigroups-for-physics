@@ -1,6 +1,7 @@
 import math
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 
 def time_embedding(t, dim=32):
@@ -68,5 +69,5 @@ class FNO1D(nn.Module):
         x = self.inp(u[:, None, :])
         x = x + self.t_proj(time_embedding(t, self.t_dim))[:, :, None]
         for s, w in zip(self.spec, self.w):
-            x = torch.gelu(s(x) + w(x))
+            x = F.gelu(s(x) + w(x))
         return u + self.out(x)[:, 0, :]
