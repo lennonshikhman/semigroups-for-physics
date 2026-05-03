@@ -27,27 +27,39 @@ def solve_heat(u0, nu, t_final, n_save):
     return traj.astype(np.float32), times.astype(np.float32)
 
 
+
 def solve_burgers(u0, nu, t_final, n_save):
     n, nx = u0.shape
     dx = 2 * np.pi / nx
-    dt_int = min(0.002, t_final / 200)
-    n_steps = int(np.ceil(t_final / dt_int))
-    dt_int = t_final / n_steps
-    save_idx = np.linspace(0, n_steps, n_save).round().astype(int)
+    times = np.linspace(0.0, t_final, n_save, dtype=np.float64)
     out = np.empty((n, n_save, nx), dtype=np.float64)
     u = u0.astype(np.float64).copy()
     out[:, 0] = u
-    si = 1
-    for step in range(1, n_steps + 1):
-        ux = (np.roll(u, -1, axis=1) - np.roll(u, 1, axis=1)) / (2 * dx)
-        uxx = (np.roll(u, -1, axis=1) - 2 * u + np.roll(u, 1, axis=1)) / (dx * dx)
-        u = u + dt_int * (-u * ux + nu * uxx)
-        if step == save_idx[si]:
-            out[:, si] = u
-            si += 1
-            if si >= n_save:
-                break
-    if not np.isfinite(out).all():
-        raise ValueError("Non-finite values in burgers solver")
-    times = np.linspace(0.0, t_final, n_save, dtype=np.float32)
-    return out.astype(np.float32), times
+
+    t = 0.0
+    for si in range(1, n_save):
+        t_target = times[si]
+        while t < t_target:
+            umax = np.max(np.abs(u))
+            adv_dt = np.inf if umax < 1e-12 else 0.4 * dx / umax
+            diff_dt = np.inf if nu <= 0 else 0.45 * dx * dx / nu
+            dt = min(1e-3, adv_dt, diff_dt, t_target - t)
+
+            f = 0.5 * u * u
+            u_r = np.roll(u, -1, axis=1)
+            f_r = np.roll(f, -1, axis=1)
+            a = np.maximum(np.abs(u), np.abs(u_r))
+            flux_iphalf = 0.5 * (f + f_r) - 0.5 * a * (u_r - u)
+            flux_imhalf = np.roll(flux_iphalf, 1, axis=1)
+            conv = -(flux_iphalf - flux_imhalf) / dx
+
+            uxx = (u_r - 2 * u + np.roll(u, 1, axis=1)) / (dx * dx)
+            u = u + dt * (conv + nu * uxx)
+            t += dt
+
+            if not np.isfinite(u).all():
+                raise ValueError("Non-finite values in burgers solver")
+
+        out[:, si] = u
+
+    return out.astype(np.float32), times.astype(np.float32)
