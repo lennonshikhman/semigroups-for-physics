@@ -107,7 +107,8 @@ def main():
                                  one_step=out['one_step'],rollout_auc=out['rollout_auc'],rollout_final=out['rollout_final'],sg_seen=out['sg_seen'],sg_unseen=out['sg_unseen'],spearman=out['spearman'])
                         rows.append(row); curves[f"{system}-{model_name}-{variant}"]=out['per_traj']['curve']
                         for i in range(len(out['per_traj']['auc'])):
-                            raw.append(dict(**row, traj=i, rollout_auc=out['per_traj']['auc'][i], sg_seen=out['per_traj']['sg_seen'][i], sg_unseen=out['per_traj']['sg_unseen'][i]))
+                            raw_row = {k: v for k, v in row.items() if k not in ('rollout_auc', 'sg_seen', 'sg_unseen')}
+                            raw.append(dict(**raw_row, traj=i, rollout_auc=out['per_traj']['auc'][i], sg_seen=out['per_traj']['sg_seen'][i], sg_unseen=out['per_traj']['sg_unseen'][i]))
     if RUN_ABLATION:
         for lam in [0.0,0.001,0.01,0.1]:
             set_seed(999); u0=random_fourier_ic(n_train+n_val+n_test,n_grid,rng=999); trj,times=solve_heat(u0,0.05,T_FINAL,N_SAVE)
