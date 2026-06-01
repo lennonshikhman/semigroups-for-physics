@@ -187,13 +187,12 @@ The full paper result `ρ = 0.635` with 95% CI `[0.621, 0.649]` refers to the re
 If you use this repository or build on the associated paper, please cite:
 
 ```bibtex
-@inproceedings{
-shikhman2026semigroup,
-title={Semigroup Consistency as a Diagnostic for Learned Physics Simulators},
-author={Lennon J. Shikhman},
-booktitle={ICML 2026 Workshop on AI for Physics},
-year={2026},
-url={https://openreview.net/forum?id=MeAFOZnrvM}
+@inproceedings{shikhman2026semigroup,
+  title={Semigroup Consistency as a Diagnostic for Learned Physics Simulators},
+  author={Lennon J. Shikhman},
+  booktitle={ICML 2026 Workshop on AI for Physics},
+  year={2026},
+  url={https://openreview.net/forum?id=MeAFOZnrvM}
 }
 ```
 
